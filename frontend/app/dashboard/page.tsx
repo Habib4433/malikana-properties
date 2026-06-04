@@ -27,11 +27,7 @@ export default function DashboardPage() {
       <nav style={{ background: "#fff", borderBottom: "2px solid #e8f0eb", padding: "0 60px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "75px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
         <a href="/" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "48px", height: "48px", background: "linear-gradient(135deg, #1a6b3c, #2d9e5f)", borderRadius: "10px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "800", fontSize: "15px", lineHeight: "1.1" }}>
-            <span>MP</span><span style={{ fontSize: "7px", fontWeight: "400" }}>Ltd.</span>
-          </div>
-          <div>
-            <div style={{ fontWeight: "700", fontSize: "17px", color: "#0f2d1e" }}>Malikana Properties</div>
-            <div style={{ fontSize: "11px", color: "#888" }}>আপনার বিশ্বস্ত রিয়েল এস্টেট পার্টনার</div>
+            <img src="/logo.jpeg" alt="Malikana Properties" style={{ height: "60px", width: "auto", objectFit: "contain" }} />
           </div>
         </a>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
