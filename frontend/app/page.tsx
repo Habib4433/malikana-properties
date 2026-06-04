@@ -53,18 +53,23 @@ export default function Home() {
         <span>✉ malikanapropertiesltd@gmail.com &nbsp;|&nbsp; 🕐 শনি–বৃহঃ: সকাল ৯টা – সন্ধ্যা ৬টা</span>
       </div>
 
-      <nav style={{ background: "#fff", borderBottom: "2px solid #e8f0eb", padding: "0 60px 0 100px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "75px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
+      <nav style={{ background: "#fff", borderBottom: "2px solid #e8f0eb", padding: "0 60px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "75px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "48px", height: "48px", background: "linear-gradient(135deg, #1a6b3c, #2d9e5f)", borderRadius: "10px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "800", fontSize: "15px", lineHeight: "1.1", boxShadow: "0 3px 8px rgba(26,107,60,0.35)" }}>
-            <img src="/logo.jpeg" alt="Malikana Properties" style={{ height: "60px", width: "auto", objectFit: "contain" }} />
+            <span>MP</span>
+            <span style={{ fontSize: "7px", fontWeight: "400", letterSpacing: "1px" }}>Ltd.</span>
+          </div>
+          <div>
+            <div style={{ fontWeight: "700", fontSize: "17px", color: "#0f2d1e" }}>Malikana Properties</div>
+            <div style={{ fontSize: "11px", color: "#888" }}>আপনার বিশ্বস্ত রিয়েল এস্টেট পার্টনার</div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: "32px", position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
-  {[["হোম", "/"], ["জমি ও প্লট", "/plots"], ["ফ্ল্যাট বিক্রয়", "/flats"], ["কিস্তি সুবিধা", "/installment"], ["যোগাযোগ", "/contact"]].map(([label, href]) => (
-    <a key={label} href={href} className="nav-link">{label}</a>
-  ))}
-</div>
         <div style={{ display: "flex", gap: "32px" }}>
+          {[["হোম", "/"], ["জমি ও প্লট", "/plots"], ["ফ্ল্যাট বিক্রয়", "/flats"], ["কিস্তি সুবিধা", "/installment"], ["যোগাযোগ", "/contact"]].map(([label, href]) => (
+            <a key={label} href={href} className="nav-link">{label}</a>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
           <a href="/login" style={{ background: "transparent", color: "#1a6b3c", border: "2px solid #1a6b3c", padding: "9px 20px", borderRadius: "7px", fontWeight: "600", fontSize: "14px" }}>লগইন</a>
           <a href="/login" style={{ background: "#1a6b3c", color: "#fff", padding: "9px 20px", borderRadius: "7px", fontWeight: "600", fontSize: "14px" }}>রেজিস্ট্রেশন</a>
         </div>
