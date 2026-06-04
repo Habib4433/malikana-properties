@@ -53,7 +53,7 @@ export default function Home() {
         <span>✉ malikanapropertiesltd@gmail.com &nbsp;|&nbsp; 🕐 শনি–বৃহঃ: সকাল ৯টা – সন্ধ্যা ৬টা</span>
       </div>
 
-      <nav style={{ background: "#fff", borderBottom: "2px solid #e8f0eb", padding: "0 60px 0 100px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "75px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(0,0,0,0.07)", position: "relative" }}>
+      <nav style={{ background: "#fff", borderBottom: "2px solid #e8f0eb", padding: "0 60px 0 100px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "75px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "48px", height: "48px", background: "linear-gradient(135deg, #1a6b3c, #2d9e5f)", borderRadius: "10px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "800", fontSize: "15px", lineHeight: "1.1", boxShadow: "0 3px 8px rgba(26,107,60,0.35)" }}>
             <img src="/logo.jpeg" alt="Malikana Properties" style={{ height: "60px", width: "auto", objectFit: "contain" }} />
