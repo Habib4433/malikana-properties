@@ -14,6 +14,7 @@ export default function Home() {
   const [current, setCurrent] = useState(0);
   const [featuredPlots, setFeaturedPlots] = useState<any[]>([]);
   const [featuredFlats, setFeaturedFlats] = useState<any[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -46,44 +47,81 @@ export default function Home() {
         .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: background 0.3s; border: none; }
         .dot.active { background: #fff; transform: scale(1.3); }
         .service-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); transition: all 0.3s; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+        .hamburger span { display: block; width: 24px; height: 2px; background: #333; border-radius: 2px; }
+        .mobile-menu { display: none; }
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .desktop-buttons { display: none !important; }
+          .hamburger { display: flex !important; }
+          .mobile-menu { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; background: #fff; border-top: 1px solid #e2e8f0; }
+          .mobile-menu a { color: #333; font-size: 15px; font-weight: 500; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+          .topbar-text { display: none; }
+          .hero-title { font-size: 28px !important; }
+          .hero-sub { font-size: 14px !important; }
+          .hero-padding { padding: 0 20px !important; }
+          .stats-bar { display: none !important; }
+          .section-padding { padding: 40px 20px !important; }
+          .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-3 { grid-template-columns: 1fr !important; }
+          .grid-2 { grid-template-columns: 1fr !important; }
+          .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+          .hero-height { height: 480px !important; }
+        }
+        @media (max-width: 480px) {
+          .grid-4 { grid-template-columns: 1fr !important; }
+          .footer-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
-      <div style={{ background: "#0f2d1e", color: "#9ecfb2", fontSize: "13px", padding: "7px 60px", display: "flex", justifyContent: "space-between" }}>
-        <span>📞 01719-880087 &nbsp;|&nbsp; 01911-118505</span>
-        <span>✉ malikanapropertiesltd@gmail.com &nbsp;|&nbsp; 🕐 শনি–বৃহঃ: সকাল ৯টা – সন্ধ্যা ৬টা</span>
+      <div style={{ background: "#0f2d1e", color: "#9ecfb2", fontSize: "13px", padding: "7px 40px", display: "flex", justifyContent: "space-between" }}>
+        <span>📞 01719-880087 | 01911-118505</span>
+        <span className="topbar-text">✉ malikanapropertiesltd@gmail.com | 🕐 শনি–বৃহঃ: ৯টা–৬টা</span>
       </div>
 
-      <nav style={{ background: "#fff", borderBottom: "2px solid #e8f0eb", padding: "0 60px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "75px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "48px", height: "48px", background: "linear-gradient(135deg, #1a6b3c, #2d9e5f)", borderRadius: "10px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "800", fontSize: "15px", lineHeight: "1.1", boxShadow: "0 3px 8px rgba(26,107,60,0.35)" }}>
-            <img src="/logo.jpeg" alt="Malikana Properties" style={{ height: "60px", width: "auto", objectFit: "contain" }} />
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: "32px" }}>
+      <nav style={{ background: "#fff", borderBottom: "2px solid #e8f0eb", padding: "0 40px", display: "flex", justifyContent: "space-between", alignItems: "center", height: "75px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
+        <a href="/" style={{ display: "flex", alignItems: "center" }}>
+          <img src="/logo.jpeg" alt="Malikana Properties" style={{ height: "60px", width: "auto", objectFit: "contain" }} />
+        </a>
+
+        <div className="desktop-nav" style={{ display: "flex", gap: "28px", justifyContent: "center" }}>
           {[["হোম", "/"], ["জমি ও প্লট", "/plots"], ["ফ্ল্যাট বিক্রয়", "/flats"], ["কিস্তি সুবিধা", "/installment"], ["যোগাযোগ", "/contact"]].map(([label, href]) => (
             <a key={label} href={href} className="nav-link">{label}</a>
           ))}
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <a href="/login" style={{ background: "transparent", color: "#1a6b3c", border: "2px solid #1a6b3c", padding: "9px 20px", borderRadius: "7px", fontWeight: "600", fontSize: "14px" }}>লগইন</a>
+
+        <div className="desktop-buttons" style={{ display: "flex", gap: "10px" }}>
+          <a href="/login" style={{ color: "#1a6b3c", border: "2px solid #1a6b3c", padding: "9px 20px", borderRadius: "7px", fontWeight: "600", fontSize: "14px" }}>লগইন</a>
           <a href="/login" style={{ background: "#1a6b3c", color: "#fff", padding: "9px 20px", borderRadius: "7px", fontWeight: "600", fontSize: "14px" }}>রেজিস্ট্রেশন</a>
         </div>
+
+        <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+          <span></span><span></span><span></span>
+        </button>
       </nav>
 
-      <section style={{ position: "relative", height: "580px", overflow: "hidden" }}>
+      {menuOpen && (
+        <div className="mobile-menu">
+          {[["হোম", "/"], ["জমি ও প্লট", "/plots"], ["ফ্ল্যাট বিক্রয়", "/flats"], ["কিস্তি সুবিধা", "/installment"], ["যোগাযোগ", "/contact"], ["লগইন", "/login"]].map(([label, href]) => (
+            <a key={label} href={href}>{label}</a>
+          ))}
+        </div>
+      )}
+
+      <section className="hero-height" style={{ position: "relative", height: "580px", overflow: "hidden" }}>
         {slides.map((slide, i) => (
           <div key={i} style={{ position: "absolute", inset: 0, opacity: i === current ? 1 : 0, transition: "opacity 1s ease-in-out" }}>
             <img src={slide.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(10,40,20,0.82) 0%, rgba(10,40,20,0.5) 60%, rgba(10,40,20,0.1) 100%)" }} />
           </div>
         ))}
-        <div style={{ position: "relative", zIndex: 2, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 60px", maxWidth: "640px" }}>
+        <div className="hero-padding" style={{ position: "relative", zIndex: 2, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 60px", maxWidth: "640px" }}>
           <div style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)", display: "inline-block", padding: "6px 18px", borderRadius: "20px", fontSize: "13px", color: "#d4f0e0", marginBottom: "20px", width: "fit-content" }}>
             🏡 বাংলাদেশের বিশ্বস্ত রিয়েল এস্টেট প্রতিষ্ঠান
           </div>
-          <h1 style={{ fontSize: "44px", fontWeight: "700", color: "#fff", lineHeight: "1.25", marginBottom: "16px" }}>{slides[current].title}</h1>
-          <p style={{ fontSize: "17px", color: "#b8e0c8", marginBottom: "32px", lineHeight: "1.7" }}>{slides[current].sub}</p>
-          <div style={{ display: "flex", gap: "14px" }}>
+          <h1 className="hero-title" style={{ fontSize: "44px", fontWeight: "700", color: "#fff", lineHeight: "1.25", marginBottom: "16px" }}>{slides[current].title}</h1>
+          <p className="hero-sub" style={{ fontSize: "17px", color: "#b8e0c8", marginBottom: "32px", lineHeight: "1.7" }}>{slides[current].sub}</p>
+          <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
             <a href="/plots" style={{ background: "#fff", color: "#1a6b3c", padding: "14px 30px", borderRadius: "8px", fontWeight: "700", fontSize: "15px" }}>জমি ও প্লট দেখুন →</a>
             <a href="/installment" style={{ background: "transparent", color: "#fff", border: "2px solid rgba(255,255,255,0.6)", padding: "14px 30px", borderRadius: "8px", fontWeight: "600", fontSize: "15px" }}>কিস্তি হিসাব করুন</a>
           </div>
@@ -93,7 +131,7 @@ export default function Home() {
             <button key={i} className={`dot${i === current ? " active" : ""}`} onClick={() => setCurrent(i)} />
           ))}
         </div>
-        <div style={{ position: "absolute", bottom: "0", right: "0", zIndex: 3, display: "flex", background: "rgba(10,40,20,0.85)", backdropFilter: "blur(8px)" }}>
+        <div className="stats-bar" style={{ position: "absolute", bottom: "0", right: "0", zIndex: 3, display: "flex", background: "rgba(10,40,20,0.85)", backdropFilter: "blur(8px)" }}>
           {[{ num: "৫০০+", label: "প্লট বিক্রয়" }, { num: "১০+", label: "বছরের অভিজ্ঞতা" }, { num: "৬৪", label: "জেলায় জমি" }, { num: "১০০%", label: "আইনি নিরাপদ" }].map((s, i) => (
             <div key={i} style={{ padding: "18px 28px", textAlign: "center", borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
               <div style={{ fontSize: "22px", fontWeight: "700", color: "#fff" }}>{s.num}</div>
@@ -103,13 +141,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={{ padding: "70px 60px", background: "#fff" }}>
+      <section className="section-padding" style={{ padding: "70px 60px", background: "#fff" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <div style={{ color: "#1a6b3c", fontWeight: "600", fontSize: "14px", letterSpacing: "1px", marginBottom: "8px" }}>আমাদের সেবা</div>
           <h2 style={{ fontSize: "34px", fontWeight: "700", color: "#0f2d1e" }}>আপনার পাশে সর্বদা</h2>
           <p style={{ color: "#666", marginTop: "10px", fontSize: "16px" }}>সম্পত্তি ক্রয়ের প্রতিটি ধাপে আমরা আপনার পাশে আছি</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "24px", maxWidth: "1100px", margin: "0 auto" }}>
+        <div className="grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "24px", maxWidth: "1100px", margin: "0 auto" }}>
           {[
             { icon: "🏡", title: "জমি ও প্লট বিক্রয়", desc: "সারা বাংলাদেশে আবাসিক ও বাণিজ্যিক জমি এবং পরিকল্পিত প্লট বিক্রয়", color: "#e8f5ee", border: "#c3e6d0" },
             { icon: "🏢", title: "ফ্ল্যাট বিক্রয়", desc: "ঢাকাসহ সারাদেশে আধুনিক আবাসিক ফ্ল্যাট বিক্রয় করা হয়", color: "#eef2ff", border: "#c7d2fe" },
@@ -125,12 +163,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={{ padding: "70px 60px", background: "#f4f7f5" }}>
+      <section className="section-padding" style={{ padding: "70px 60px", background: "#f4f7f5" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <div style={{ color: "#1a6b3c", fontWeight: "600", fontSize: "14px", letterSpacing: "1px", marginBottom: "8px" }}>জমি ও প্লট</div>
           <h2 style={{ fontSize: "34px", fontWeight: "700", color: "#0f2d1e" }}>ফিচার্ড জমি ও প্লটসমূহ</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "28px", maxWidth: "1100px", margin: "0 auto" }}>
+        <div className="grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "28px", maxWidth: "1100px", margin: "0 auto" }}>
           {(featuredPlots.length > 0 ? featuredPlots : [
             { image_url: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80", area: "পূর্বাচল, ঢাকা", size: "৩ কাঠা", price: 1800000, description: "পূর্বাচল নতুন শহরে অবস্থিত। স্কুল, হাসপাতাল কাছে।" },
             { image_url: "https://images.unsplash.com/photo-1559087867-ce4c91325525?w=600&q=80", area: "গাজীপুর, ঢাকা", size: "৫ কাঠা", price: 2400000, description: "গাজীপুরের প্রাণকেন্দ্রে। বিনিয়োগের জন্য আদর্শ।" },
@@ -159,12 +197,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={{ padding: "70px 60px", background: "#fff" }}>
+      <section className="section-padding" style={{ padding: "70px 60px", background: "#fff" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <div style={{ color: "#1a6b3c", fontWeight: "600", fontSize: "14px", letterSpacing: "1px", marginBottom: "8px" }}>ফ্ল্যাট বিক্রয়</div>
           <h2 style={{ fontSize: "34px", fontWeight: "700", color: "#0f2d1e" }}>ফিচার্ড ফ্ল্যাটসমূহ</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "28px", maxWidth: "1100px", margin: "0 auto" }}>
+        <div className="grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "28px", maxWidth: "1100px", margin: "0 auto" }}>
           {(featuredFlats.length > 0 ? featuredFlats : [
             { image_url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80", area: "মিরপুর, ঢাকা", size: "১২০০ বর্গফুট", price: 6500000, description: "মিরপুরে আধুনিক ফ্ল্যাট। ৩ বেডরুম, ২ বাথরুম সহ।" },
             { image_url: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=600&q=80", area: "উত্তরা, ঢাকা", size: "১৫০০ বর্গফুট", price: 9000000, description: "উত্তরায় লাক্সারি ফ্ল্যাট। সুইমিং পুল ও জিম সহ।" },
@@ -192,11 +230,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section style={{ padding: "70px 60px", background: "linear-gradient(135deg, #0f2d1e, #1a5c34)", color: "#fff" }}>
+      <section className="section-padding" style={{ padding: "70px 60px", background: "linear-gradient(135deg, #0f2d1e, #1a5c34)", color: "#fff" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <h2 style={{ fontSize: "34px", fontWeight: "700" }}>কেন Malikana Properties?</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", maxWidth: "960px", margin: "0 auto" }}>
+        <div className="grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", maxWidth: "960px", margin: "0 auto" }}>
           {[
             { icon: "✅", title: "১০০% আইনি নিরাপদ", desc: "সকল জমি ও প্লটের আইনি কাগজপত্র সম্পূর্ণ যাচাইকৃত" },
             { icon: "💰", title: "সহজ কিস্তি সুবিধা", desc: "মাসিক কিস্তিতে জমির মালিক হওয়ার সুযোগ" },
@@ -211,10 +249,10 @@ export default function Home() {
         </div>
       </section>
 
-      <footer style={{ background: "#0a1f13", color: "#fff", padding: "56px 60px 28px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1.5fr", gap: "48px", marginBottom: "48px" }}>
+      <footer className="section-padding" style={{ background: "#0a1f13", color: "#fff", padding: "56px 60px 28px" }}>
+        <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1.5fr", gap: "48px", marginBottom: "48px" }}>
           <div>
-            <div style={{ fontWeight: "700", fontSize: "17px", marginBottom: "12px" }}>Malikana Properties Ltd.</div>
+            <img src="/logo.jpeg" alt="Malikana Properties" style={{ height: "50px", width: "auto", objectFit: "contain", marginBottom: "12px", filter: "brightness(0) invert(1)" }} />
             <p style={{ color: "#6b9e80", fontSize: "14px", lineHeight: "1.85" }}>বাংলাদেশের বিশ্বস্ত রিয়েল এস্টেট প্রতিষ্ঠান।<br />Kazi Garden, 7th Floor, Tejgaon, Dhaka-1215</p>
           </div>
           <div>
@@ -239,7 +277,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div style={{ borderTop: "1px solid #1a3526", paddingTop: "24px", display: "flex", justifyContent: "space-between", color: "#3d6b4f", fontSize: "13px" }}>
+        <div style={{ borderTop: "1px solid #1a3526", paddingTop: "24px", display: "flex", justifyContent: "space-between", color: "#3d6b4f", fontSize: "13px", flexWrap: "wrap", gap: "8px" }}>
           <span>© ২০২৫ Malikana Properties Ltd. সর্বস্বত্ব সংরক্ষিত</span>
           <span>Developed by Md Habib | 01830504433</span>
         </div>
