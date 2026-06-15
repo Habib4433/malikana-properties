@@ -24,14 +24,18 @@ export default function LoginPage() {
         body: JSON.stringify(loginForm)
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.message || "লগইন ব্যর্থ হয়েছে"); return; }
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setSuccess("লগইন সফল হয়েছে! রিডাইরেক্ট হচ্ছে...");
-      setTimeout(() => window.location.href = "/", 1500);
+      if (!res.ok) { setError(data.message || "লগইন ব্যর্থ হয়েছে"); setLoading(false); return; }
+      
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("token", data.token);
+        window.localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      setSuccess("লগইন সফল হয়েছে! হোমপেজে যাচ্ছে...");
+      setTimeout(() => {
+        window.location.replace("/");
+      }, 1000);
     } catch {
       setError("সার্ভারের সাথে সংযোগ হচ্ছে না");
-    } finally {
       setLoading(false);
     }
   };
@@ -49,14 +53,18 @@ export default function LoginPage() {
         body: JSON.stringify({ name: regForm.name, phone: regForm.phone, email: regForm.email, password: regForm.password, nominee: regForm.nominee, nid: regForm.nid })
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.message || "রেজিস্ট্রেশন ব্যর্থ হয়েছে"); return; }
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setSuccess("রেজিস্ট্রেশন সফল হয়েছে! রিডাইরেক্ট হচ্ছে...");
-      setTimeout(() => window.location.href = "/", 1500);
+      if (!res.ok) { setError(data.message || "রেজিস্ট্রেশন ব্যর্থ হয়েছে"); setLoading(false); return; }
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("token", data.token);
+        window.localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      setSuccess("রেজিস্ট্রেশন সফল হয়েছে! হোমপেজে যাচ্ছে...");
+      setTimeout(() => {
+        window.location.replace("/");
+      }, 1000);
     } catch {
       setError("সার্ভারের সাথে সংযোগ হচ্ছে না");
-    } finally {
       setLoading(false);
     }
   };
