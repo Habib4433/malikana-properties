@@ -29,8 +29,8 @@ export default function Navbar({ active }: { active?: string }) {
   return (
     <>
       <style>{`
-        .mp-topbar { background:#0f2d1e; color:#9ecfb2; font-size:12px; padding:7px 20px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px; }
-        .mp-nav { background:#fff; border-bottom:2px solid #e8f0eb; padding:0 20px; display:flex; justify-content:space-between; align-items:center; height:70px; position:sticky; top:0; z-index:200; box-shadow:0 2px 12px rgba(0,0,0,0.07); }
+        .mp-topbar { background:#0f2d1e; color:#9ecfb2; font-size:12px; padding:7px 40px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px; }
+        .mp-nav { background:#fff; border-bottom:2px solid #e8f0eb; padding:0 40px; display:flex; justify-content:space-between; align-items:center; height:70px; position:sticky; top:0; z-index:200; box-shadow:0 2px 12px rgba(0,0,0,0.07); }
         .mp-nav-links { display:flex; gap:28px; }
         .mp-nav-link { color:#333; font-size:14px; font-weight:500; text-decoration:none; }
         .mp-nav-link:hover, .mp-nav-link.active { color:#1a6b3c; }
