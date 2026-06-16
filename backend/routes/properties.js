@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
   try {
     const { sector } = req.query;
     let query = 'SELECT * FROM properties';
-    let params: any[] = [];
+    let params = [];
     if (sector) {
       query += ' WHERE sector = $1';
       params = [sector];
