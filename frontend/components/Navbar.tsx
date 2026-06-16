@@ -37,10 +37,13 @@ export default function Navbar({ active }: { active?: string }) {
         .mp-nav-link.active { border-bottom:2px solid #1a6b3c; padding-bottom:4px; }
         .mp-nav-actions { display:flex; gap:10px; align-items:center; }
         .mp-hamburger { display:none; background:none; border:none; cursor:pointer; font-size:28px; color:#1a6b3c; padding:4px; }
-        .mp-user-name { color:#1a6b3c; font-weight:600; font-size:14px; }
-        .mp-logout { color:#dc2626; border:2px solid #dc2626; padding:8px 16px; borderRadius:7px; font-weight:600; font-size:13px; background:none; cursor:pointer; font-family:sans-serif; border-radius:7px; }
+        .mp-profile { display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 12px; borderRadius:8px; border-radius:8px; background:#f0fdf4; border:1px solid #c3e6d0; text-decoration:none; }
+        .mp-profile:hover { background:#e8f5ee; }
+        .mp-logout { color:#dc2626; border:2px solid #dc2626; padding:8px 16px; font-weight:600; font-size:13px; background:none; cursor:pointer; font-family:sans-serif; border-radius:7px; }
         .mp-logout:hover { background:#fef2f2; }
         @media(max-width:768px) {
+          .mp-topbar { padding:7px 16px; }
+          .mp-nav { padding:0 16px; }
           .mp-nav-links, .mp-nav-actions { display:none; }
           .mp-hamburger { display:block; }
         }
@@ -73,7 +76,11 @@ export default function Navbar({ active }: { active?: string }) {
         <div className="mp-nav-actions">
           {user ? (
             <>
-              <span className="mp-user-name">👤 {user.name}</span>
+              <a href={user.role === "admin" ? "/admin" : "/dashboard"} className="mp-profile">
+                <span style={{ fontSize: "20px" }}>👤</span>
+                <span style={{ fontSize: "14px", fontWeight: "600", color: "#1a6b3c" }}>{user.name}</span>
+                {user.role === "admin" && <span style={{ background: "#1a6b3c", color: "#fff", fontSize: "10px", padding: "2px 6px", borderRadius: "10px" }}>Admin</span>}
+              </a>
               <button className="mp-logout" onClick={handleLogout}>লগআউট</button>
             </>
           ) : (
@@ -96,9 +103,12 @@ export default function Navbar({ active }: { active?: string }) {
             ))}
             {user ? (
               <div className="mp-mobile-user">
-                <div style={{ fontSize: "14px", fontWeight: "700", color: "#1a6b3c", marginBottom: "10px" }}>👤 {user.name}</div>
+                <div style={{ fontSize: "14px", fontWeight: "700", color: "#1a6b3c", marginBottom: "6px" }}>👤 {user.name}</div>
                 <div style={{ fontSize: "12px", color: "#666", marginBottom: "12px" }}>📞 {user.phone}</div>
-                <button onClick={handleLogout} style={{ width: "100%", background: "#dc2626", color: "#fff", border: "none", padding: "11px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer", fontFamily: "sans-serif" }}>লগআউট</button>
+                <a href={user.role === "admin" ? "/admin" : "/dashboard"} style={{ display: "block", textAlign: "center", background: "#1a6b3c", color: "#fff", padding: "10px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", marginBottom: "8px" }}>
+                  {user.role === "admin" ? "Admin Panel" : "Dashboard"}
+                </a>
+                <button onClick={handleLogout} style={{ width: "100%", background: "#dc2626", color: "#fff", border: "none", padding: "10px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer", fontFamily: "sans-serif" }}>লগআউট</button>
               </div>
             ) : (
               <div className="mp-mobile-btns">
