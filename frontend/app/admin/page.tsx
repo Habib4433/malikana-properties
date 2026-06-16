@@ -1,301 +1,299 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Navbar from "../../components/Navbar";
 
-const buyers = [
-  { id: 1, name: "মোঃ আব্দুর রহিম", phone: "01711-123456", property: "পূর্বাচল, ঢাকা", paid: 4, total: 6, status: "সক্রিয়" },
-  { id: 2, name: "মোছাঃ সালমা বেগম", phone: "01812-234567", property: "গাজীপুর, ঢাকা", paid: 2, total: 12, status: "সক্রিয়" },
-  { id: 3, name: "মোঃ করিম", phone: "01913-345678", property: "নারায়ণগঞ্জ", paid: 6, total: 6, status: "সম্পন্ন" },
-  { id: 4, name: "মোঃ জামাল", phone: "01614-456789", property: "সাভার, ঢাকা", paid: 0, total: 24, status: "বকেয়া" },
-];
-
-const properties = [
-  { id: 1, area: "পূর্বাচল, ঢাকা", size: "৩ কাঠা", price: "১৮,০০,০০০", type: "আবাসিক", sector: "জমি ও প্লট", status: "বুকড" },
-  { id: 2, area: "গাজীপুর, ঢাকা", size: "৫ কাঠা", price: "২৪,০০,০০০", type: "আবাসিক", sector: "জমি ও প্লট", status: "পাওয়া যাচ্ছে" },
-  { id: 3, area: "নারায়ণগঞ্জ", size: "৪ কাঠা", price: "২০,০০,০০০", type: "বাণিজ্যিক", sector: "জমি ও প্লট", status: "পাওয়া যাচ্ছে" },
-  { id: 4, area: "মিরপুর, ঢাকা", size: "১২০০ বর্গফুট", price: "৬৫,০০,০০০", type: "আবাসিক", sector: "ফ্ল্যাট বিক্রয়", status: "পাওয়া যাচ্ছে" },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [showAddProperty, setShowAddProperty] = useState(false);
-  const [newProperty, setNewProperty] = useState({ area: "", size: "", price: "", type: "আবাসিক", sector: "জমি ও প্লট" });
+  const [tab, setTab] = useState<"properties" | "users">("properties");
+  const [properties, setProperties] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [form, setForm] = useState({ area: "", size: "", price: "", type: "আবাসিক", status: "পাওয়া যাচ্ছে", sector: "জমি ও প্লট", description: "", image_url: "" });
+  const [msg, setMsg] = useState("");
+
+  const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : "";
+
+  useEffect(() => {
+    const user = typeof window !== "undefined" ? JSON.parse(window.localStorage.getItem("user") || "{}") : {};
+    if (!user || user.role !== "admin") {
+      window.location.href = "/";
+      return;
+    }
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [pRes, uRes] = await Promise.all([
+        fetch(`${API_URL}/api/properties`),
+        fetch(`${API_URL}/api/admin/users`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      const pData = await pRes.json();
+      const uData = await uRes.json();
+      setProperties(pData.data || []);
+      setUsers(uData.users || []);
+    } catch {}
+    setLoading(false);
+  };
+
+  const handleSave = async () => {
+    setMsg("");
+    const url = editItem
+      ? `${API_URL}/api/admin/properties/${editItem.id}`
+      : `${API_URL}/api/admin/properties`;
+    const method = editItem ? "PATCH" : "POST";
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...form, price: parseInt(form.price) })
+      });
+      const data = await res.json();
+      setMsg(data.message);
+      if (res.ok) { setShowForm(false); setEditItem(null); loadData(); }
+    } catch { setMsg("সার্ভার এরর"); }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("মুছে ফেলবেন?")) return;
+    await fetch(`${API_URL}/api/admin/properties/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    loadData();
+  };
+
+  const handleRoleChange = async (id: string, role: string) => {
+    await fetch(`${API_URL}/api/admin/users/${id}/role`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ role })
+    });
+    loadData();
+  };
+
+  const openEdit = (p: any) => {
+    setForm({ area: p.area, size: p.size, price: String(p.price), type: p.type, status: p.status, sector: p.sector, description: p.description || "", image_url: p.image_url || "" });
+    setEditItem(p);
+    setShowForm(true);
+  };
+
+  if (loading) return (
+    <main style={{ fontFamily: "sans-serif" }}>
+      <Navbar />
+      <div style={{ textAlign: "center", padding: "100px", fontSize: "18px", color: "#1a6b3c" }}>লোড হচ্ছে...</div>
+    </main>
+  );
 
   return (
-    <main style={{ fontFamily: "'Hind Siliguri', sans-serif", minHeight: "100vh", background: "#f4f7f5", display: "flex" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap'); * { margin:0; padding:0; box-sizing:border-box; } a { text-decoration:none; } input, select { font-family:inherit; color:#111; } input::placeholder { color:#aaa; }`}</style>
+    <main style={{ fontFamily: "sans-serif", minHeight: "100vh", background: "#f4f7f5" }}>
+      <style>{`
+        * { margin:0; padding:0; box-sizing:border-box; }
+        a { text-decoration:none; }
+        input, select, textarea { font-family:sans-serif; color:#111; }
+        input::placeholder, textarea::placeholder { color:#aaa; }
+        input:focus, select:focus, textarea:focus { outline:none; border-color:#1a6b3c !important; }
+        .table { width:100%; border-collapse:collapse; }
+        .table th { background:#f4f7f5; padding:12px 16px; text-align:left; font-size:13px; color:#555; font-weight:600; border-bottom:2px solid #e2e8f0; }
+        .table td { padding:12px 16px; font-size:13px; color:#333; border-bottom:1px solid #f0f0f0; }
+        .table tr:hover td { background:#fafafa; }
+        .pad { padding:28px 60px; }
+        @media(max-width:768px){ .pad{ padding:16px; } .table th, .table td { padding:8px 10px; font-size:12px; } }
+      `}</style>
 
-      <div style={{ width: "260px", background: "#0f2d1e", minHeight: "100vh", padding: "24px 0", position: "fixed", left: 0, top: 0 }}>
-        <div style={{ padding: "0 24px 24px", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "42px", height: "42px", background: "linear-gradient(135deg, #1a6b3c, #2d9e5f)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "800", fontSize: "14px" }}>MP</div>
-            <div>
-              <div style={{ fontWeight: "700", fontSize: "15px", color: "#fff" }}>Malikana Admin</div>
-              <div style={{ fontSize: "11px", color: "#6ee7a0" }}>অ্যাডমিন প্যানেল</div>
-            </div>
-          </div>
+      <Navbar />
+
+      <section style={{ background: "linear-gradient(135deg,#0f2d1e,#1a5c34)", color: "#fff", padding: "28px 40px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <h1 style={{ fontSize: "clamp(20px,3vw,26px)", fontWeight: "700", marginBottom: "4px" }}>⚙️ Admin Panel</h1>
+          <p style={{ color: "#9ecfb2", fontSize: "14px" }}>সব কিছু এখান থেকে manage করুন</p>
         </div>
-        <div style={{ padding: "16px 12px" }}>
+      </section>
+
+      <div className="pad" style={{ maxWidth: "1200px", margin: "0 auto" }}>
+
+        {/* Stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px", marginBottom: "24px" }}>
           {[
-            { id: "dashboard", icon: "📊", label: "ড্যাশবোর্ড" },
-            { id: "buyers", icon: "👥", label: "ক্রেতা তালিকা" },
-            { id: "properties", icon: "🏡", label: "সম্পত্তি তালিকা" },
-            { id: "installments", icon: "💳", label: "কিস্তি ব্যবস্থাপনা" },
-            { id: "documents", icon: "📄", label: "দলিল আপলোড" },
-            { id: "reports", icon: "📈", label: "রিপোর্ট" },
-          ].map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", borderRadius: "10px", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "14px", fontWeight: "500", marginBottom: "4px", background: activeTab === item.id ? "rgba(255,255,255,0.15)" : "transparent", color: activeTab === item.id ? "#fff" : "#9ecfb2", textAlign: "left" }}>
-              <span>{item.icon}</span><span>{item.label}</span>
+            { icon: "🏡", label: "মোট property", value: properties.length },
+            { icon: "👥", label: "মোট user", value: users.length },
+            { icon: "✅", label: "পাওয়া যাচ্ছে", value: properties.filter(p => p.status === "পাওয়া যাচ্ছে").length },
+            { icon: "🔒", label: "বুকড", value: properties.filter(p => p.status === "বুকড").length },
+          ].map(s => (
+            <div key={s.label} style={{ background: "#fff", borderRadius: "12px", padding: "18px", border: "1px solid #e2e8f0", textAlign: "center" }}>
+              <div style={{ fontSize: "24px", marginBottom: "6px" }}>{s.icon}</div>
+              <div style={{ fontSize: "24px", fontWeight: "700", color: "#1a6b3c" }}>{s.value}</div>
+              <div style={{ fontSize: "12px", color: "#666" }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: "0", marginBottom: "20px", background: "#fff", borderRadius: "10px", padding: "4px", border: "1px solid #e2e8f0", width: "fit-content" }}>
+          {[["properties", "🏡 Property"], ["users", "👥 User"]].map(([t, l]) => (
+            <button key={t} onClick={() => setTab(t as any)}
+              style={{ padding: "9px 22px", borderRadius: "8px", border: "none", fontFamily: "sans-serif", fontSize: "14px", fontWeight: "600", cursor: "pointer", background: tab === t ? "#1a6b3c" : "transparent", color: tab === t ? "#fff" : "#666" }}>
+              {l}
             </button>
           ))}
         </div>
-        <div style={{ position: "absolute", bottom: "24px", left: "12px", right: "12px" }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px", borderRadius: "10px", color: "#f87171", fontSize: "14px", fontWeight: "500" }}>🚪 লগআউট</a>
-        </div>
-      </div>
 
-      <div style={{ marginLeft: "260px", flex: 1, padding: "32px 40px" }}>
+        {msg && <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#16a34a", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontSize: "14px" }}>✅ {msg}</div>}
 
-        {activeTab === "dashboard" && (
-          <div>
-            <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#0f2d1e", marginBottom: "8px" }}>অ্যাডমিন ড্যাশবোর্ড</h1>
-            <p style={{ color: "#666", marginBottom: "28px" }}>Malikana Properties Ltd. এর সামগ্রিক পরিসংখ্যান</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px", marginBottom: "32px" }}>
-              {[
-                { icon: "👥", label: "মোট ক্রেতা", value: "১২৫ জন", color: "#e8f5ee", border: "#c3e6d0", text: "#1a6b3c" },
-                { icon: "🏡", label: "মোট সম্পত্তি", value: "৮৫টি", color: "#eef2ff", border: "#c7d2fe", text: "#3b82f6" },
-                { icon: "💰", label: "মাসিক আয়", value: "৳ ১৮,৭৫,০০০", color: "#fffbeb", border: "#fde68a", text: "#d97706" },
-                { icon: "⚠️", label: "বকেয়া কিস্তি", value: "১৫টি", color: "#fef2f2", border: "#fecaca", text: "#e53e3e" },
-              ].map(card => (
-                <div key={card.label} style={{ background: card.color, borderRadius: "14px", padding: "22px", border: `1px solid ${card.border}` }}>
-                  <div style={{ fontSize: "28px", marginBottom: "10px" }}>{card.icon}</div>
-                  <div style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>{card.label}</div>
-                  <div style={{ fontSize: "20px", fontWeight: "700", color: card.text }}>{card.value}</div>
-                </div>
-              ))}
+        {/* Properties Tab */}
+        {tab === "properties" && (
+          <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
+            <div style={{ padding: "18px 20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f2d1e" }}>সব Property</h3>
+              <button onClick={() => { setShowForm(true); setEditItem(null); setForm({ area: "", size: "", price: "", type: "আবাসিক", status: "পাওয়া যাচ্ছে", sector: "জমি ও প্লট", description: "", image_url: "" }); }}
+                style={{ background: "#1a6b3c", color: "#fff", border: "none", padding: "9px 18px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer", fontFamily: "sans-serif" }}>
+                + নতুন Property
+              </button>
             </div>
-            <div style={{ background: "#fff", borderRadius: "14px", padding: "24px", border: "1px solid #e2e8f0" }}>
-              <h2 style={{ fontSize: "17px", fontWeight: "700", color: "#0f2d1e", marginBottom: "16px" }}>⚠️ বকেয়া কিস্তির তালিকা</h2>
-              {buyers.filter(b => b.status === "বকেয়া" || b.paid < b.total).map(b => (
-                <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid #f0f0f0" }}>
-                  <div>
-                    <div style={{ fontSize: "15px", fontWeight: "600", color: "#0f2d1e" }}>{b.name}</div>
-                    <div style={{ fontSize: "13px", color: "#888", marginTop: "2px" }}>{b.phone} • {b.property}</div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "13px", color: "#666" }}>পরিশোধিত: {b.paid}/{b.total}</div>
-                    <span style={{ background: b.status === "বকেয়া" ? "#fef2f2" : "#fffbeb", color: b.status === "বকেয়া" ? "#e53e3e" : "#d97706", padding: "3px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" }}>{b.status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {activeTab === "buyers" && (
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#0f2d1e" }}>ক্রেতা তালিকা</h1>
-              <button style={{ background: "#1a6b3c", color: "#fff", border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>+ নতুন ক্রেতা যোগ</button>
-            </div>
-            <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ background: "#f4f7f5" }}>
-                    {["#", "নাম", "ফোন", "সম্পত্তি", "কিস্তি অগ্রগতি", "অবস্থা", "অ্যাকশন"].map(h => (
-                      <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "13px", fontWeight: "600", color: "#555", borderBottom: "1px solid #e2e8f0" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {buyers.map(b => (
-                    <tr key={b.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", color: "#666" }}>{b.id}</td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "#0f2d1e" }}>{b.name}</td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", color: "#666" }}>{b.phone}</td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", color: "#666" }}>{b.property}</td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <div style={{ flex: 1, background: "#e0e0e0", borderRadius: "20px", height: "8px", overflow: "hidden" }}>
-                            <div style={{ background: "#1a6b3c", height: "100%", width: `${(b.paid / b.total) * 100}%`, borderRadius: "20px" }} />
-                          </div>
-                          <span style={{ fontSize: "12px", color: "#666" }}>{b.paid}/{b.total}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <span style={{ background: b.status === "সক্রিয়" ? "#e8f5ee" : b.status === "সম্পন্ন" ? "#eef2ff" : "#fef2f2", color: b.status === "সক্রিয়" ? "#1a6b3c" : b.status === "সম্পন্ন" ? "#3b82f6" : "#e53e3e", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" }}>{b.status}</span>
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <button style={{ background: "#eef2ff", color: "#3b82f6", border: "none", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", cursor: "pointer" }}>দেখুন</button>
-                          <button style={{ background: "#fef2f2", color: "#e53e3e", border: "none", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", cursor: "pointer" }}>SMS</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "properties" && (
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#0f2d1e" }}>সম্পত্তি তালিকা</h1>
-              <button onClick={() => setShowAddProperty(true)} style={{ background: "#1a6b3c", color: "#fff", border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>+ নতুন সম্পত্তি যোগ</button>
-            </div>
-            {showAddProperty && (
-              <div style={{ background: "#fff", borderRadius: "14px", padding: "24px", border: "1px solid #e2e8f0", marginBottom: "24px" }}>
-                <h2 style={{ fontSize: "17px", fontWeight: "700", color: "#0f2d1e", marginBottom: "20px" }}>নতুন সম্পত্তি যোগ করুন</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  {[{ label: "এলাকা", key: "area", placeholder: "যেমন: পূর্বাচল, ঢাকা" }, { label: "আয়তন", key: "size", placeholder: "যেমন: ৩ কাঠা" }, { label: "মূল্য (টাকা)", key: "price", placeholder: "যেমন: 1800000" }].map(field => (
-                    <div key={field.key}>
-                      <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#444", marginBottom: "6px" }}>{field.label}</label>
-                      <input placeholder={field.placeholder} value={newProperty[field.key as keyof typeof newProperty]}
-                        onChange={e => setNewProperty({ ...newProperty, [field.key]: e.target.value })}
-                        style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #e0e0e0", fontSize: "14px" }} />
+            {showForm && (
+              <div style={{ padding: "20px", background: "#f9fafb", borderBottom: "1px solid #e2e8f0" }}>
+                <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0f2d1e", marginBottom: "16px" }}>
+                  {editItem ? "Property সম্পাদনা" : "নতুন Property যোগ করুন"}
+                </h4>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: "12px", marginBottom: "12px" }}>
+                  {[
+                    { label: "এলাকা *", key: "area", placeholder: "যেমন: পূর্বাচল, ঢাকা" },
+                    { label: "আকার *", key: "size", placeholder: "যেমন: ৩ কাঠা" },
+                    { label: "মূল্য (টাকা) *", key: "price", placeholder: "যেমন: 1800000" },
+                    { label: "ছবির URL", key: "image_url", placeholder: "https://..." },
+                  ].map(f => (
+                    <div key={f.key}>
+                      <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "5px" }}>{f.label}</label>
+                      <input value={form[f.key as keyof typeof form]} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder}
+                        style={{ width: "100%", padding: "9px 12px", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "13px" }} />
                     </div>
                   ))}
                   <div>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#444", marginBottom: "6px" }}>সেক্টর</label>
-                    <select value={newProperty.sector} onChange={e => setNewProperty({ ...newProperty, sector: e.target.value })}
-                      style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #e0e0e0", fontSize: "14px", cursor: "pointer" }}>
-                      <option value="জমি ও প্লট">জমি ও প্লট</option>
-                      <option value="ফ্ল্যাট বিক্রয়">ফ্ল্যাট বিক্রয়</option>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "5px" }}>বিভাগ</label>
+                    <select value={form.sector} onChange={e => setForm({ ...form, sector: e.target.value })}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "13px", cursor: "pointer" }}>
+                      <option>জমি ও প্লট</option>
+                      <option>ফ্ল্যাট বিক্রয়</option>
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#444", marginBottom: "6px" }}>ধরন</label>
-                    <select value={newProperty.type} onChange={e => setNewProperty({ ...newProperty, type: e.target.value })}
-                      style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #e0e0e0", fontSize: "14px", cursor: "pointer" }}>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "5px" }}>ধরন</label>
+                    <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "13px", cursor: "pointer" }}>
                       <option>আবাসিক</option>
                       <option>বাণিজ্যিক</option>
                       <option>কৃষি</option>
+                      <option>লাক্সারি</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "5px" }}>অবস্থা</label>
+                    <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "13px", cursor: "pointer" }}>
+                      <option>পাওয়া যাচ্ছে</option>
+                      <option>বুকড</option>
                     </select>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "12px", marginTop: "20px" }}>
-                  <button style={{ background: "#1a6b3c", color: "#fff", border: "none", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>সংরক্ষণ করুন</button>
-                  <button onClick={() => setShowAddProperty(false)} style={{ background: "transparent", color: "#666", border: "1.5px solid #e0e0e0", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>বাতিল</button>
+                <div style={{ marginBottom: "14px" }}>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "5px" }}>বিবরণ</label>
+                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="সংক্ষিপ্ত বিবরণ..." rows={3}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: "7px", border: "1.5px solid #ddd", fontSize: "13px", resize: "vertical" }} />
+                </div>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button onClick={handleSave} style={{ background: "#1a6b3c", color: "#fff", border: "none", padding: "10px 24px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer", fontFamily: "sans-serif" }}>
+                    {editItem ? "আপডেট করুন" : "যোগ করুন"}
+                  </button>
+                  <button onClick={() => { setShowForm(false); setEditItem(null); }}
+                    style={{ background: "#f4f4f4", color: "#333", border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer", fontFamily: "sans-serif" }}>
+                    বাতিল
+                  </button>
                 </div>
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
-              {properties.map(p => (
-                <div key={p.id} style={{ background: "#fff", borderRadius: "14px", padding: "22px", border: "1px solid #e2e8f0" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "14px" }}>
-                    <h3 style={{ fontSize: "17px", fontWeight: "700", color: "#0f2d1e" }}>{p.area}</h3>
-                    <span style={{ background: p.status === "পাওয়া যাচ্ছে" ? "#e8f5ee" : "#fef2f2", color: p.status === "পাওয়া যাচ্ছে" ? "#1a6b3c" : "#e53e3e", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" }}>{p.status}</span>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "16px" }}>
-                    {[{ label: "আয়তন", value: p.size }, { label: "মূল্য", value: `৳ ${p.price}` }, { label: "ধরন", value: p.type }, { label: "সেক্টর", value: p.sector }].map(item => (
-                      <div key={item.label} style={{ background: "#f4f7f5", borderRadius: "8px", padding: "10px" }}>
-                        <div style={{ fontSize: "11px", color: "#888" }}>{item.label}</div>
-                        <div style={{ fontSize: "14px", fontWeight: "600", color: "#0f2d1e", marginTop: "2px" }}>{item.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <button style={{ flex: 1, background: "#eef2ff", color: "#3b82f6", border: "none", padding: "9px", borderRadius: "7px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>সম্পাদনা</button>
-                    <button style={{ flex: 1, background: "#fef2f2", color: "#e53e3e", border: "none", padding: "9px", borderRadius: "7px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>মুছুন</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {activeTab === "documents" && (
-          <div>
-            <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#0f2d1e", marginBottom: "24px" }}>দলিল আপলোড</h1>
-            <div style={{ background: "#fff", borderRadius: "14px", padding: "28px", border: "1px solid #e2e8f0" }}>
-              <h2 style={{ fontSize: "17px", fontWeight: "700", color: "#0f2d1e", marginBottom: "20px" }}>📄 নতুন দলিল আপলোড</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#444", marginBottom: "6px" }}>ক্রেতা নির্বাচন করুন</label>
-                  <select style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #e0e0e0", fontSize: "14px", cursor: "pointer" }}>
-                    {buyers.map(b => <option key={b.id}>{b.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#444", marginBottom: "6px" }}>দলিলের ধরন</label>
-                  <select style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #e0e0e0", fontSize: "14px", cursor: "pointer" }}>
-                    <option>চুক্তিপত্র</option>
-                    <option>রেজিস্ট্রি দলিল</option>
-                    <option>পর্চা</option>
-                    <option>নামজারি</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ border: "2px dashed #c3e6d0", borderRadius: "12px", padding: "40px", textAlign: "center", background: "#f4faf6", cursor: "pointer" }}>
-                <div style={{ fontSize: "40px", marginBottom: "12px" }}>📁</div>
-                <div style={{ fontSize: "15px", fontWeight: "600", color: "#0f2d1e", marginBottom: "6px" }}>PDF ফাইল আপলোড করুন</div>
-                <div style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>এখানে ফাইল টেনে আনুন অথবা ক্লিক করুন</div>
-                <input type="file" accept=".pdf" style={{ display: "none" }} id="fileUpload" />
-                <label htmlFor="fileUpload" style={{ background: "#1a6b3c", color: "#fff", padding: "10px 24px", borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}>ফাইল বেছে নিন</label>
-              </div>
-              <button style={{ marginTop: "16px", background: "#1a6b3c", color: "#fff", border: "none", padding: "12px 28px", borderRadius: "8px", fontWeight: "600", fontSize: "14px", cursor: "pointer" }}>আপলোড করুন →</button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "reports" && (
-          <div>
-            <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#0f2d1e", marginBottom: "24px" }}>মাসিক রিপোর্ট</h1>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
-              {[
-                { month: "মে ২০২৫", collected: "১৫,০০,০০০", due: "৩,০০,০০০", buyers: "১০০" },
-                { month: "এপ্রিল ২০২৫", collected: "১৮,৭৫,০০০", due: "১,৫০,০০০", buyers: "১২৫" },
-                { month: "মার্চ ২০২৫", collected: "১৬,৫০,০০০", due: "২,২৫,০০০", buyers: "১১০" },
-              ].map(r => (
-                <div key={r.month} style={{ background: "#fff", borderRadius: "14px", padding: "22px", border: "1px solid #e2e8f0" }}>
-                  <h3 style={{ fontSize: "17px", fontWeight: "700", color: "#0f2d1e", marginBottom: "16px" }}>{r.month}</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "13px", color: "#666" }}>সংগৃহীত কিস্তি</span>
-                      <span style={{ fontSize: "14px", fontWeight: "700", color: "#1a6b3c" }}>৳ {r.collected}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "13px", color: "#666" }}>বকেয়া</span>
-                      <span style={{ fontSize: "14px", fontWeight: "700", color: "#e53e3e" }}>৳ {r.due}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "13px", color: "#666" }}>সক্রিয় ক্রেতা</span>
-                      <span style={{ fontSize: "14px", fontWeight: "700", color: "#0f2d1e" }}>{r.buyers} জন</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === "installments" && (
-          <div>
-            <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#0f2d1e", marginBottom: "24px" }}>কিস্তি ব্যবস্থাপনা</h1>
-            <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table className="table">
                 <thead>
-                  <tr style={{ background: "#f4f7f5" }}>
-                    {["ক্রেতা", "ফোন", "সম্পত্তি", "মাসিক কিস্তি", "অগ্রগতি", "অবস্থা", "অ্যাকশন"].map(h => (
-                      <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "13px", fontWeight: "600", color: "#555", borderBottom: "1px solid #e2e8f0" }}>{h}</th>
-                    ))}
+                  <tr>
+                    <th>এলাকা</th>
+                    <th>বিভাগ</th>
+                    <th>আকার</th>
+                    <th>মূল্য</th>
+                    <th>অবস্থা</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {buyers.map(b => (
-                    <tr key={b.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "#0f2d1e" }}>{b.name}</td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", color: "#666" }}>{b.phone}</td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", color: "#666" }}>{b.property}</td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "700", color: "#1a6b3c" }}>৳ ১৫,০০০</td>
-                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "#666" }}>{b.paid}/{b.total} কিস্তি</td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <span style={{ background: b.status === "সক্রিয়" ? "#e8f5ee" : b.status === "সম্পন্ন" ? "#eef2ff" : "#fef2f2", color: b.status === "সক্রিয়" ? "#1a6b3c" : b.status === "সম্পন্ন" ? "#3b82f6" : "#e53e3e", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" }}>{b.status}</span>
+                  {properties.length === 0 ? (
+                    <tr><td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#888" }}>কোনো property নেই — উপরে যোগ করুন</td></tr>
+                  ) : properties.map(p => (
+                    <tr key={p.id}>
+                      <td style={{ fontWeight: "600" }}>{p.area}</td>
+                      <td>{p.sector}</td>
+                      <td>{p.size}</td>
+                      <td style={{ color: "#1a6b3c", fontWeight: "600" }}>৳ {p.price?.toLocaleString()}</td>
+                      <td>
+                        <span style={{ background: p.status === "বুকড" ? "#fef2f2" : "#f0fdf4", color: p.status === "বুকড" ? "#dc2626" : "#16a34a", padding: "3px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" }}>
+                          {p.status}
+                        </span>
                       </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <button style={{ background: "#e8f5ee", color: "#1a6b3c", border: "none", padding: "6px 14px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>কিস্তি যোগ</button>
+                      <td>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button onClick={() => openEdit(p)} style={{ background: "#eef2ff", color: "#3730a3", border: "none", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", fontFamily: "sans-serif", fontWeight: "600" }}>সম্পাদনা</button>
+                          <button onClick={() => handleDelete(p.id)} style={{ background: "#fef2f2", color: "#dc2626", border: "none", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", fontFamily: "sans-serif", fontWeight: "600" }}>মুছুন</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {tab === "users" && (
+          <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
+            <div style={{ padding: "18px 20px", borderBottom: "1px solid #e2e8f0" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f2d1e" }}>সব User ({users.length}জন)</h3>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>নাম</th>
+                    <th>ফোন</th>
+                    <th>ইমেইল</th>
+                    <th>Role</th>
+                    <th>যোগদান</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.length === 0 ? (
+                    <tr><td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#888" }}>কোনো user নেই</td></tr>
+                  ) : users.map(u => (
+                    <tr key={u.id}>
+                      <td style={{ fontWeight: "600" }}>{u.name}</td>
+                      <td>{u.phone}</td>
+                      <td>{u.email || "-"}</td>
+                      <td>
+                        <span style={{ background: u.role === "admin" ? "#fef3c7" : "#f0fdf4", color: u.role === "admin" ? "#92400e" : "#166534", padding: "3px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" }}>
+                          {u.role === "admin" ? "অ্যাডমিন" : "ক্রেতা"}
+                        </span>
+                      </td>
+                      <td>{new Date(u.created_at).toLocaleDateString("bn-BD")}</td>
+                      <td>
+                        <button onClick={() => handleRoleChange(u.id, u.role === "admin" ? "buyer" : "admin")}
+                          style={{ background: u.role === "admin" ? "#fef2f2" : "#f0fdf4", color: u.role === "admin" ? "#dc2626" : "#16a34a", border: "none", padding: "6px 12px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", fontFamily: "sans-serif", fontWeight: "600" }}>
+                          {u.role === "admin" ? "Buyer করুন" : "Admin করুন"}
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -305,6 +303,10 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      <footer style={{ background: "#0a1f13", color: "#3d6b4f", padding: "24px 20px", textAlign: "center", fontSize: "13px", marginTop: "40px" }}>
+        © ২০২৫ Malikana Properties Ltd. | Admin Panel
+      </footer>
     </main>
   );
 }
