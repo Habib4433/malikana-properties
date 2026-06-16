@@ -32,7 +32,7 @@ export default function LoginPage() {
       }
       setSuccess("লগইন সফল হয়েছে! হোমপেজে যাচ্ছে...");
       setTimeout(() => {
-        window.location.replace("/");
+        window.location.replace("/dashboard");
       }, 1000);
     } catch {
       setError("সার্ভারের সাথে সংযোগ হচ্ছে না");
@@ -61,7 +61,7 @@ export default function LoginPage() {
       }
       setSuccess("রেজিস্ট্রেশন সফল হয়েছে! হোমপেজে যাচ্ছে...");
       setTimeout(() => {
-        window.location.replace("/");
+        window.location.replace("/dashboard");
       }, 1000);
     } catch {
       setError("সার্ভারের সাথে সংযোগ হচ্ছে না");
