@@ -1,67 +1,53 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/auth');
-const { createClient } = require('@supabase/supabase-js');
-const ws = require('ws');
+const { Pool } = require('pg');
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
-  realtime: { transport: ws }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
+// Properties table তৈরি
+pool.query(`
+  CREATE TABLE IF NOT EXISTS properties (
+    id SERIAL PRIMARY KEY,
+    area VARCHAR(200) NOT NULL,
+    size VARCHAR(100) NOT NULL,
+    price BIGINT NOT NULL,
+    type VARCHAR(50) DEFAULT 'আবাসিক',
+    status VARCHAR(50) DEFAULT 'পাওয়া যাচ্ছে',
+    sector VARCHAR(100) NOT NULL,
+    description TEXT DEFAULT '',
+    image_url TEXT DEFAULT '',
+    created_at TIMESTAMP DEFAULT NOW()
+  )
+`).then(() => console.log('Properties table ready'))
+  .catch(err => console.error('Table error:', err));
+
+// সব property আনুন
 router.get('/', async (req, res) => {
   try {
-    const { sector, type, status } = req.query;
-    let query = supabase.from('properties').select('*');
-    if (sector) query = query.eq('sector', sector);
-    if (type) query = query.eq('type', type);
-    if (status) query = query.eq('status', status);
-    const { data, error } = await query;
-    if (error) throw error;
-    res.json({ success: true, data });
+    const { sector } = req.query;
+    let query = 'SELECT * FROM properties';
+    let params: any[] = [];
+    if (sector) {
+      query += ' WHERE sector = $1';
+      params = [sector];
+    }
+    query += ' ORDER BY created_at DESC';
+    const result = await pool.query(query, params);
+    res.json({ data: result.rows });
   } catch (error) {
-    res.status(500).json({ message: 'সার্ভার এরর', error: error.message });
+    res.status(500).json({ message: 'সার্ভার এরর' });
   }
 });
 
+// একটা property আনুন
 router.get('/:id', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('properties').select('*').eq('id', req.params.id).single();
-    if (error) throw error;
-    if (!data) return res.status(404).json({ message: 'সম্পত্তি পাওয়া যায়নি' });
-    res.json({ success: true, data });
-  } catch (error) {
-    res.status(500).json({ message: 'সার্ভার এরর' });
-  }
-});
-
-router.post('/', authMiddleware, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'অনুমতি নেই' });
-    const { data, error } = await supabase.from('properties').insert([req.body]).select();
-    if (error) throw error;
-    res.status(201).json({ success: true, message: 'সম্পত্তি যোগ হয়েছে', data: data[0] });
-  } catch (error) {
-    res.status(500).json({ message: 'সার্ভার এরর' });
-  }
-});
-
-router.put('/:id', authMiddleware, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'অনুমতি নেই' });
-    const { data, error } = await supabase.from('properties').update(req.body).eq('id', req.params.id).select();
-    if (error) throw error;
-    res.json({ success: true, message: 'আপডেট হয়েছে', data: data[0] });
-  } catch (error) {
-    res.status(500).json({ message: 'সার্ভার এরর' });
-  }
-});
-
-router.delete('/:id', authMiddleware, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'অনুমতি নেই' });
-    const { error } = await supabase.from('properties').delete().eq('id', req.params.id);
-    if (error) throw error;
-    res.json({ success: true, message: 'মুছে ফেলা হয়েছে' });
+    const result = await pool.query('SELECT * FROM properties WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ message: 'পাওয়া যায়নি' });
+    res.json({ data: result.rows[0] });
   } catch (error) {
     res.status(500).json({ message: 'সার্ভার এরর' });
   }
