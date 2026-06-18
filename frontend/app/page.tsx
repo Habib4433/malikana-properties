@@ -156,6 +156,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Flats */}
+      <section className="section-pad" style={{ background:"#fff" }}>
+        <div style={{ textAlign:"center", marginBottom:"40px" }}>
+          <div style={{ color:"#1a6b3c", fontWeight:"600", fontSize:"14px", marginBottom:"8px" }}>ফ্ল্যাট বিক্রয়</div>
+          <h2 style={{ fontSize:"clamp(24px,4vw,34px)", fontWeight:"700", color:"#0f2d1e" }}>ফিচার্ড ফ্ল্যাটসমূহ</h2>
+        </div>
+        <div className="grid-3" style={{ maxWidth:"1100px", margin:"0 auto" }}>
+          {(featuredFlats.length > 0 ? featuredFlats : [
+            { image_url:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80", area:"মিরপুর, ঢাকা", size:"১২০০ বর্গফুট", price:4500000, description:"মিরপুরে আধুনিক ৩ বেডরুমের ফ্ল্যাট।" },
+            { image_url:"https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80", area:"উত্তরা, ঢাকা", size:"১৫০০ বর্গফুট", price:6000000, description:"উত্তরায় লাক্সারি ৩ বেডরুমের ফ্ল্যাট।" },
+            { image_url:"https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80", area:"বসুন্ধরা, ঢাকা", size:"১৮০০ বর্গফুট", price:8000000, description:"বসুন্ধরায় প্রিমিয়াম ফ্ল্যাট।" },
+          ]).map((f:any, i:number) => (
+            <div key={i} className="plot-card" style={{ background:"#fff", borderRadius:"16px", overflow:"hidden", border:"1px solid #e2e8f0", boxShadow:"0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div style={{ position:"relative", height:"200px" }}>
+                <img src={f.image_url} alt={f.area} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                <div style={{ position:"absolute", top:"14px", left:"14px", background:"#3b82f6", color:"#fff", fontSize:"12px", fontWeight:"700", padding:"4px 14px", borderRadius:"20px" }}>নতুন</div>
+              </div>
+              <div style={{ padding:"20px" }}>
+                <h4 style={{ fontSize:"17px", fontWeight:"700", color:"#0f2d1e", marginBottom:"8px" }}>{f.area}</h4>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"8px" }}>
+                  <span style={{ color:"#666", fontSize:"13px" }}>📐 {f.size}</span>
+                  <span style={{ color:"#1a6b3c", fontWeight:"700", fontSize:"17px" }}>৳ {typeof f.price==="number"?f.price.toLocaleString():f.price}</span>
+                </div>
+                {f.description && <p style={{ fontSize:"13px", color:"#666", lineHeight:"1.6", marginBottom:"10px" }}>{f.description}</p>}
+                <div style={{ background:"#e8f5ee", color:"#166534", fontSize:"12px", padding:"6px 12px", borderRadius:"6px", marginBottom:"14px" }}>✓ কিস্তি সুবিধা আছে</div>
+                <a href="/flats" style={{ display:"block", textAlign:"center", background:"#1a6b3c", color:"#fff", padding:"12px", borderRadius:"9px", fontWeight:"600", fontSize:"14px" }}>বিস্তারিত দেখুন →</a>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign:"center", marginTop:"36px" }}>
+          <a href="/flats" style={{ color:"#1a6b3c", border:"2px solid #1a6b3c", padding:"12px 32px", borderRadius:"9px", fontWeight:"600", fontSize:"15px" }}>সকল ফ্ল্যাট দেখুন →</a>
+        </div>
+      </section>
+
       {/* Why Us */}
       <section className="section-pad" style={{ background:"linear-gradient(135deg,#0f2d1e,#1a5c34)", color:"#fff" }}>
         <div style={{ textAlign:"center", marginBottom:"40px" }}>
