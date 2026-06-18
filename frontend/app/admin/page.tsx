@@ -5,27 +5,68 @@ import Navbar from "../../components/Navbar";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function AdminPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginForm, setLoginForm] = useState({ phone: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
   const [tab, setTab] = useState<"properties" | "users">("properties");
   const [properties, setProperties] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [form, setForm] = useState({ area: "", size: "", price: "", type: "আবাসিক", status: "পাওয়া যাচ্ছে", sector: "জমি ও প্লট", description: "", image_url: "" });
   const [msg, setMsg] = useState("");
-
-  const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : "";
+  const [adminName, setAdminName] = useState("");
 
   useEffect(() => {
-    const user = typeof window !== "undefined" ? JSON.parse(window.localStorage.getItem("user") || "{}") : {};
-    if (!user || user.role !== "admin") {
-      window.location.href = "/";
-      return;
+    if (typeof window === "undefined") return;
+    const token = window.localStorage.getItem("admin_token");
+    const user = window.localStorage.getItem("admin_user");
+    if (token && user) {
+      const u = JSON.parse(user);
+      if (u.role === "admin") {
+        setIsLoggedIn(true);
+        setAdminName(u.name);
+        loadData(token);
+      }
     }
-    loadData();
   }, []);
 
-  const loadData = async () => {
+  const handleAdminLogin = async () => {
+    setLoginError("");
+    if (!loginForm.phone || !loginForm.password) { setLoginError("ফোন ও পাসওয়ার্ড দিন"); return; }
+    setLoginLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginForm)
+      });
+      const data = await res.json();
+      if (!res.ok) { setLoginError(data.message || "লগইন ব্যর্থ"); setLoginLoading(false); return; }
+      if (data.user.role !== "admin") { setLoginError("আপনি Admin নন!"); setLoginLoading(false); return; }
+      window.localStorage.setItem("admin_token", data.token);
+      window.localStorage.setItem("admin_user", JSON.stringify(data.user));
+      setAdminName(data.user.name);
+      setIsLoggedIn(true);
+      loadData(data.token);
+    } catch {
+      setLoginError("সার্ভারের সাথে সংযোগ হচ্ছে না");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleAdminLogout = () => {
+    window.localStorage.removeItem("admin_token");
+    window.localStorage.removeItem("admin_user");
+    setIsLoggedIn(false);
+    setLoginForm({ phone: "", password: "" });
+  };
+
+  const loadData = async (token: string) => {
     setLoading(true);
     try {
       const [pRes, uRes] = await Promise.all([
@@ -40,40 +81,39 @@ export default function AdminPage() {
     setLoading(false);
   };
 
+  const getToken = () => typeof window !== "undefined" ? window.localStorage.getItem("admin_token") || "" : "";
+
   const handleSave = async () => {
     setMsg("");
-    const url = editItem
-      ? `${API_URL}/api/admin/properties/${editItem.id}`
-      : `${API_URL}/api/admin/properties`;
+    const url = editItem ? `${API_URL}/api/admin/properties/${editItem.id}` : `${API_URL}/api/admin/properties`;
     const method = editItem ? "PATCH" : "POST";
     try {
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ ...form, price: parseInt(form.price) })
       });
       const data = await res.json();
       setMsg(data.message);
-      if (res.ok) { setShowForm(false); setEditItem(null); loadData(); }
+      if (res.ok) { setShowForm(false); setEditItem(null); loadData(getToken()); }
     } catch { setMsg("সার্ভার এরর"); }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("মুছে ফেলবেন?")) return;
     await fetch(`${API_URL}/api/admin/properties/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
+      method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` }
     });
-    loadData();
+    loadData(getToken());
   };
 
   const handleRoleChange = async (id: string, role: string) => {
     await fetch(`${API_URL}/api/admin/users/${id}/role`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ role })
     });
-    loadData();
+    loadData(getToken());
   };
 
   const openEdit = (p: any) => {
@@ -82,13 +122,55 @@ export default function AdminPage() {
     setShowForm(true);
   };
 
-  if (loading) return (
-    <main style={{ fontFamily: "sans-serif" }}>
-      <Navbar />
-      <div style={{ textAlign: "center", padding: "100px", fontSize: "18px", color: "#1a6b3c" }}>লোড হচ্ছে...</div>
-    </main>
-  );
+  // Admin Login Page
+  if (!isLoggedIn) {
+    return (
+      <main style={{ fontFamily: "sans-serif", minHeight: "100vh", background: "#0f2d1e", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+        <style>{`* { margin:0; padding:0; box-sizing:border-box; } input { font-family:sans-serif; color:#111; } input::placeholder { color:#aaa; } input:focus { outline:none; border-color:#1a6b3c !important; }`}</style>
+        <div style={{ width: "100%", maxWidth: "420px" }}>
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <img src="/logo.jpeg" alt="Malikana Properties" style={{ height: "60px", width: "auto", objectFit: "contain", marginBottom: "16px" }} />
+            <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#fff", marginBottom: "6px" }}>Admin Panel</h1>
+            <p style={{ color: "#9ecfb2", fontSize: "14px" }}>শুধুমাত্র অনুমোদিত Admin প্রবেশ করতে পারবেন</p>
+          </div>
 
+          <div style={{ background: "#fff", borderRadius: "16px", padding: "32px" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#0f2d1e", marginBottom: "24px", textAlign: "center" }}>🔐 Admin লগইন</h2>
+
+            {loginError && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontSize: "14px" }}>
+                ❌ {loginError}
+              </div>
+            )}
+
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "7px" }}>ফোন নম্বর</label>
+              <input type="tel" placeholder="01XXXXXXXXX" value={loginForm.phone} onChange={e => setLoginForm({ ...loginForm, phone: e.target.value })}
+                style={{ width: "100%", padding: "12px 14px", borderRadius: "8px", border: "1.5px solid #ddd", fontSize: "14px" }} />
+            </div>
+
+            <div style={{ marginBottom: "24px" }}>
+              <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "7px" }}>পাসওয়ার্ড</label>
+              <input type="password" placeholder="পাসওয়ার্ড দিন" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })}
+                onKeyDown={e => e.key === "Enter" && handleAdminLogin()}
+                style={{ width: "100%", padding: "12px 14px", borderRadius: "8px", border: "1.5px solid #ddd", fontSize: "14px" }} />
+            </div>
+
+            <button onClick={handleAdminLogin} disabled={loginLoading}
+              style={{ width: "100%", background: loginLoading ? "#6b9e82" : "#1a6b3c", color: "#fff", border: "none", padding: "14px", borderRadius: "10px", fontWeight: "700", fontSize: "15px", cursor: loginLoading ? "not-allowed" : "pointer", fontFamily: "sans-serif" }}>
+              {loginLoading ? "লগইন হচ্ছে..." : "Admin লগইন →"}
+            </button>
+
+            <div style={{ textAlign: "center", marginTop: "16px" }}>
+              <a href="/" style={{ color: "#1a6b3c", fontSize: "13px", fontWeight: "500" }}>← হোমপেজে ফিরুন</a>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Admin Dashboard
   return (
     <main style={{ fontFamily: "sans-serif", minHeight: "100vh", background: "#f4f7f5" }}>
       <style>{`
@@ -105,22 +187,27 @@ export default function AdminPage() {
         @media(max-width:768px){ .pad{ padding:16px; } .table th, .table td { padding:8px 10px; font-size:12px; } }
       `}</style>
 
-      <Navbar />
-
-      <section style={{ background: "linear-gradient(135deg,#0f2d1e,#1a5c34)", color: "#fff", padding: "28px 40px" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <h1 style={{ fontSize: "clamp(20px,3vw,26px)", fontWeight: "700", marginBottom: "4px" }}>⚙️ Admin Panel</h1>
-          <p style={{ color: "#9ecfb2", fontSize: "14px" }}>সব কিছু এখান থেকে manage করুন</p>
+      <section style={{ background: "linear-gradient(135deg,#0f2d1e,#1a5c34)", color: "#fff", padding: "20px 40px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <img src="/logo.jpeg" alt="logo" style={{ height: "44px", width: "auto", objectFit: "contain" }} />
+            <div>
+              <h1 style={{ fontSize: "20px", fontWeight: "700" }}>⚙️ Admin Panel</h1>
+              <p style={{ color: "#9ecfb2", fontSize: "13px" }}>স্বাগতম, {adminName}!</p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <a href="/" style={{ background: "rgba(255,255,255,0.15)", color: "#fff", padding: "8px 16px", borderRadius: "7px", fontWeight: "600", fontSize: "13px" }}>🏠 হোম</a>
+            <button onClick={handleAdminLogout} style={{ background: "#dc2626", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "7px", fontWeight: "600", fontSize: "13px", cursor: "pointer", fontFamily: "sans-serif" }}>লগআউট</button>
+          </div>
         </div>
       </section>
 
       <div className="pad" style={{ maxWidth: "1200px", margin: "0 auto" }}>
-
-        {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px", marginBottom: "24px" }}>
           {[
-            { icon: "🏡", label: "মোট property", value: properties.length },
-            { icon: "👥", label: "মোট user", value: users.length },
+            { icon: "🏡", label: "মোট Property", value: properties.length },
+            { icon: "👥", label: "মোট User", value: users.length },
             { icon: "✅", label: "পাওয়া যাচ্ছে", value: properties.filter(p => p.status === "পাওয়া যাচ্ছে").length },
             { icon: "🔒", label: "বুকড", value: properties.filter(p => p.status === "বুকড").length },
           ].map(s => (
@@ -132,7 +219,6 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Tabs */}
         <div style={{ display: "flex", gap: "0", marginBottom: "20px", background: "#fff", borderRadius: "10px", padding: "4px", border: "1px solid #e2e8f0", width: "fit-content" }}>
           {[["properties", "🏡 Property"], ["users", "👥 User"]].map(([t, l]) => (
             <button key={t} onClick={() => setTab(t as any)}
@@ -144,11 +230,10 @@ export default function AdminPage() {
 
         {msg && <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#16a34a", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", fontSize: "14px" }}>✅ {msg}</div>}
 
-        {/* Properties Tab */}
         {tab === "properties" && (
           <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
             <div style={{ padding: "18px 20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f2d1e" }}>সব Property</h3>
+              <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f2d1e" }}>সব Property ({properties.length}টি)</h3>
               <button onClick={() => { setShowForm(true); setEditItem(null); setForm({ area: "", size: "", price: "", type: "আবাসিক", status: "পাওয়া যাচ্ছে", sector: "জমি ও প্লট", description: "", image_url: "" }); }}
                 style={{ background: "#1a6b3c", color: "#fff", border: "none", padding: "9px 18px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer", fontFamily: "sans-serif" }}>
                 + নতুন Property
@@ -230,7 +315,9 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {properties.length === 0 ? (
+                  {loading ? (
+                    <tr><td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#888" }}>লোড হচ্ছে...</td></tr>
+                  ) : properties.length === 0 ? (
                     <tr><td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#888" }}>কোনো property নেই — উপরে যোগ করুন</td></tr>
                   ) : properties.map(p => (
                     <tr key={p.id}>
@@ -257,7 +344,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Users Tab */}
         {tab === "users" && (
           <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
             <div style={{ padding: "18px 20px", borderBottom: "1px solid #e2e8f0" }}>
@@ -276,7 +362,9 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length === 0 ? (
+                  {loading ? (
+                    <tr><td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#888" }}>লোড হচ্ছে...</td></tr>
+                  ) : users.length === 0 ? (
                     <tr><td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "#888" }}>কোনো user নেই</td></tr>
                   ) : users.map(u => (
                     <tr key={u.id}>
