@@ -115,7 +115,7 @@ export default function FlatsPage() {
                   {f.description && <p style={{ fontSize: "12px", color: "#666", lineHeight: "1.6", marginBottom: "10px" }}>{f.description}</p>}
                   <div style={{ background: "#e8f5ee", color: "#166534", fontSize: "12px", padding: "6px 12px", borderRadius: "6px", marginBottom: "14px" }}>✓ কিস্তি সুবিধা আছে</div>
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <button style={{ flex: 1, background: "#1a6b3c", color: "#fff", border: "none", padding: "11px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", cursor: "pointer", fontFamily: "sans-serif" }}>বিস্তারিত →</button>
+                    <a href={`/property/${f.id}`} style={{ flex: 1, background: "#1a6b3c", color: "#fff", padding: "11px", borderRadius: "8px", fontWeight: "600", fontSize: "13px", textAlign: "center", display: "block" }}>বিস্তারিত →</a>
                     <a href="/contact" style={{ color: "#1a6b3c", border: "2px solid #1a6b3c", padding: "11px 14px", borderRadius: "8px", fontWeight: "600", fontSize: "13px" }}>📞</a>
                   </div>
                 </div>
