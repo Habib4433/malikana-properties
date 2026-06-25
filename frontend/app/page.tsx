@@ -128,14 +128,13 @@ export default function Home() {
           <h2 style={{ fontSize:"clamp(24px,4vw,34px)", fontWeight:"700", color:"#0f2d1e" }}>ফিচার্ড জমি ও প্লটসমূহ</h2>
         </div>
         <div className="grid-3" style={{ maxWidth:"1100px", margin:"0 auto" }}>
-          {(featuredPlots.length > 0 ? featuredPlots : [
-            { image_url:"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80", area:"পূর্বাচল, ঢাকা", size:"৩ কাঠা", price:1800000, description:"পূর্বাচল নতুন শহরে অবস্থিত।" },
-            { image_url:"https://images.unsplash.com/photo-1559087867-ce4c91325525?w=600&q=80", area:"গাজীপুর, ঢাকা", size:"৫ কাঠা", price:2400000, description:"গাজীপুরের প্রাণকেন্দ্রে বিনিয়োগের জন্য আদর্শ।" },
-            { image_url:"https://images.unsplash.com/photo-1592595896616-c37162298647?w=600&q=80", area:"নারায়ণগঞ্জ", size:"৪ কাঠা", price:2000000, description:"নারায়ণগঞ্জে বাণিজ্যিক প্লট।" },
-          ]).map((p:any, i:number) => (
+          {featuredPlots.length === 0 ? (
+            <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"40px", color:"#888", fontSize:"16px" }}>লোড হচ্ছে...</div>
+          ) : featuredPlots.map((p:any, i:number) => (
             <div key={i} className="plot-card" style={{ background:"#fff", borderRadius:"16px", overflow:"hidden", border:"1px solid #e2e8f0" }}>
               <div style={{ position:"relative", height:"200px" }}>
-                <img src={p.image_url} alt={p.area} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                {p.image_url ? <img src={p.image_url} alt={p.area} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> :
+                  <div style={{ width:"100%", height:"100%", background:"linear-gradient(135deg,#1a6b3c,#2d9e5f)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"50px" }}>🏞️</div>}
                 <div style={{ position:"absolute", top:"14px", left:"14px", background:"#ef4444", color:"#fff", fontSize:"12px", fontWeight:"700", padding:"4px 14px", borderRadius:"20px" }}>নতুন</div>
               </div>
               <div style={{ padding:"20px" }}>
@@ -146,7 +145,7 @@ export default function Home() {
                 </div>
                 {p.description && <p style={{ fontSize:"13px", color:"#666", lineHeight:"1.6", marginBottom:"10px" }}>{p.description}</p>}
                 <div style={{ background:"#e8f5ee", color:"#166534", fontSize:"12px", padding:"6px 12px", borderRadius:"6px", marginBottom:"14px" }}>✓ কিস্তি সুবিধা আছে</div>
-                <a href="/plots" style={{ display:"block", textAlign:"center", background:"#1a6b3c", color:"#fff", padding:"12px", borderRadius:"9px", fontWeight:"600", fontSize:"14px" }}>বিস্তারিত দেখুন →</a>
+                <a href={`/property/${p.id}`} style={{ display:"block", textAlign:"center", background:"#1a6b3c", color:"#fff", padding:"12px", borderRadius:"9px", fontWeight:"600", fontSize:"14px" }}>বিস্তারিত দেখুন →</a>
               </div>
             </div>
           ))}
@@ -163,14 +162,13 @@ export default function Home() {
           <h2 style={{ fontSize:"clamp(24px,4vw,34px)", fontWeight:"700", color:"#0f2d1e" }}>ফিচার্ড ফ্ল্যাটসমূহ</h2>
         </div>
         <div className="grid-3" style={{ maxWidth:"1100px", margin:"0 auto" }}>
-          {(featuredFlats.length > 0 ? featuredFlats : [
-            { image_url:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80", area:"মিরপুর, ঢাকা", size:"১২০০ বর্গফুট", price:4500000, description:"মিরপুরে আধুনিক ৩ বেডরুমের ফ্ল্যাট।" },
-            { image_url:"https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80", area:"উত্তরা, ঢাকা", size:"১৫০০ বর্গফুট", price:6000000, description:"উত্তরায় লাক্সারি ৩ বেডরুমের ফ্ল্যাট।" },
-            { image_url:"https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80", area:"বসুন্ধরা, ঢাকা", size:"১৮০০ বর্গফুট", price:8000000, description:"বসুন্ধরায় প্রিমিয়াম ফ্ল্যাট।" },
-          ]).map((f:any, i:number) => (
+          {featuredFlats.length === 0 ? (
+            <div style={{ gridColumn:"1/-1", textAlign:"center", padding:"40px", color:"#888", fontSize:"16px" }}>লোড হচ্ছে...</div>
+          ) : featuredFlats.map((f:any, i:number) => (
             <div key={i} className="plot-card" style={{ background:"#fff", borderRadius:"16px", overflow:"hidden", border:"1px solid #e2e8f0", boxShadow:"0 2px 12px rgba(0,0,0,0.06)" }}>
               <div style={{ position:"relative", height:"200px" }}>
-                <img src={f.image_url} alt={f.area} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                {f.image_url ? <img src={f.image_url} alt={f.area} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> :
+                  <div style={{ width:"100%", height:"100%", background:"linear-gradient(135deg,#1a6b3c,#2d9e5f)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"50px" }}>🏢</div>}
                 <div style={{ position:"absolute", top:"14px", left:"14px", background:"#3b82f6", color:"#fff", fontSize:"12px", fontWeight:"700", padding:"4px 14px", borderRadius:"20px" }}>নতুন</div>
               </div>
               <div style={{ padding:"20px" }}>
@@ -181,7 +179,7 @@ export default function Home() {
                 </div>
                 {f.description && <p style={{ fontSize:"13px", color:"#666", lineHeight:"1.6", marginBottom:"10px" }}>{f.description}</p>}
                 <div style={{ background:"#e8f5ee", color:"#166534", fontSize:"12px", padding:"6px 12px", borderRadius:"6px", marginBottom:"14px" }}>✓ কিস্তি সুবিধা আছে</div>
-                <a href="/flats" style={{ display:"block", textAlign:"center", background:"#1a6b3c", color:"#fff", padding:"12px", borderRadius:"9px", fontWeight:"600", fontSize:"14px" }}>বিস্তারিত দেখুন →</a>
+                <a href={`/property/${f.id}`} style={{ display:"block", textAlign:"center", background:"#1a6b3c", color:"#fff", padding:"12px", borderRadius:"9px", fontWeight:"600", fontSize:"14px" }}>বিস্তারিত দেখুন →</a>
               </div>
             </div>
           ))}
@@ -248,3 +246,4 @@ export default function Home() {
     </main>
   );
 }
+
