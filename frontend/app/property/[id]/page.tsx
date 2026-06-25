@@ -1,30 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import Navbar from "../../../components/Navbar";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function PropertyDetailsPage() {
-  const params = useParams();
+export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [price, setPrice] = useState("");
   const [down, setDown] = useState("");
   const [months, setMonths] = useState("24");
   const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
-    if (!params?.id) return;
     fetch(`${API_URL}/api/properties/${params.id}`)
       .then(r => r.json())
       .then(d => { setProperty(d.data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [params?.id]);
+  }, [params.id]);
 
   const calculate = () => {
-    const total = property?.price || 0;
-    const d = parseFloat(down) || total * 0.3;
+    if (!property) return;
+    const total = property.price;
+    const d = parseFloat(down) || Math.round(total * 0.3);
     const m = parseInt(months);
     const remaining = total - d;
     setResult({ monthly: Math.round(remaining / m), total, remaining: Math.round(remaining), down: Math.round(d) });
@@ -65,8 +62,7 @@ export default function PropertyDetailsPage() {
 
       <Navbar />
 
-      {/* Breadcrumb */}
-      <div style={{ background: "#0f2d1e", padding: "14px 60px" }}>
+      <div style={{ background: "#0f2d1e", padding: "14px 40px" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", fontSize: "13px", color: "#9ecfb2" }}>
           <a href="/" style={{ color: "#9ecfb2" }}>হোম</a> ›{" "}
           <a href={property.sector === "ফ্ল্যাট বিক্রয়" ? "/flats" : "/plots"} style={{ color: "#9ecfb2" }}>{property.sector}</a> ›{" "}
@@ -76,10 +72,8 @@ export default function PropertyDetailsPage() {
 
       <div className="pad" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <div className="detail-grid">
-          {/* Left */}
           <div>
-            {/* Image */}
-            <div style={{ borderRadius: "16px", overflow: "hidden", marginBottom: "20px", height: "380px", position: "relative" }}>
+            <div style={{ borderRadius: "16px", overflow: "hidden", marginBottom: "20px", height: "380px" }}>
               {property.image_url ? (
                 <img src={property.image_url} alt={property.area} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
@@ -87,15 +81,14 @@ export default function PropertyDetailsPage() {
                   {property.sector === "ফ্ল্যাট বিক্রয়" ? "🏢" : "🏞️"}
                 </div>
               )}
-              <div style={{ position: "absolute", top: "16px", left: "16px", background: property.status === "বুকড" ? "#6b7280" : "#16a34a", color: "#fff", fontSize: "13px", fontWeight: "700", padding: "5px 16px", borderRadius: "20px" }}>
-                {property.status}
-              </div>
             </div>
 
-            {/* Details */}
             <div style={{ background: "#fff", borderRadius: "14px", padding: "24px", border: "1px solid #e2e8f0", marginBottom: "20px" }}>
-              <h1 style={{ fontSize: "clamp(20px,3vw,28px)", fontWeight: "700", color: "#0f2d1e", marginBottom: "8px" }}>{property.area}</h1>
-              <div style={{ fontSize: "28px", fontWeight: "700", color: "#1a6b3c", marginBottom: "20px" }}>৳ {property.price?.toLocaleString()}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+                <h1 style={{ fontSize: "clamp(20px,3vw,28px)", fontWeight: "700", color: "#0f2d1e" }}>{property.area}</h1>
+                <span style={{ background: property.status === "বুকড" ? "#fef2f2" : "#f0fdf4", color: property.status === "বুকড" ? "#dc2626" : "#16a34a", padding: "5px 16px", borderRadius: "20px", fontSize: "13px", fontWeight: "600" }}>{property.status}</span>
+              </div>
+              <div style={{ fontSize: "30px", fontWeight: "700", color: "#1a6b3c", marginBottom: "20px" }}>৳ {property.price?.toLocaleString()}</div>
 
               <div className="info-grid">
                 {[
@@ -119,7 +112,6 @@ export default function PropertyDetailsPage() {
               )}
             </div>
 
-            {/* Contact */}
             <div style={{ background: "#fff", borderRadius: "14px", padding: "24px", border: "1px solid #e2e8f0" }}>
               <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f2d1e", marginBottom: "16px" }}>📞 যোগাযোগ করুন</h3>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -130,9 +122,7 @@ export default function PropertyDetailsPage() {
             </div>
           </div>
 
-          {/* Right */}
           <div>
-            {/* Installment Calculator */}
             <div style={{ background: "#fff", borderRadius: "14px", padding: "24px", border: "1px solid #e2e8f0", marginBottom: "20px", position: "sticky", top: "90px" }}>
               <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#0f2d1e", marginBottom: "18px" }}>💰 কিস্তি হিসাব করুন</h3>
 
@@ -184,7 +174,6 @@ export default function PropertyDetailsPage() {
               )}
             </div>
 
-            {/* Why Us */}
             <div style={{ background: "#0f2d1e", borderRadius: "14px", padding: "24px", color: "#fff" }}>
               <h3 style={{ fontSize: "15px", fontWeight: "700", marginBottom: "14px" }}>✅ কেন আমাদের বেছে নেবেন?</h3>
               {["১০০% আইনি নিরাপদ দলিল", "সহজ মাসিক কিস্তি সুবিধা", "অভিজ্ঞ বিক্রয় টিম", "দ্রুত নামজারি সহায়তা"].map(item => (
