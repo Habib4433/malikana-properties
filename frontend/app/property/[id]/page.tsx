@@ -10,13 +10,17 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
   const [down, setDown] = useState("");
   const [months, setMonths] = useState("24");
   const [result, setResult] = useState<any>(null);
+  const [id, setId] = useState<string>("");
 
   useEffect(() => {
-    fetch(`${API_URL}/api/properties/${params.id}`)
+    const resolvedId = params?.id;
+    if (!resolvedId) return;
+    setId(resolvedId);
+    fetch(`${API_URL}/api/properties/${resolvedId}`)
       .then(r => r.json())
       .then(d => { setProperty(d.data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [params.id]);
+  }, []);
 
   const calculate = () => {
     if (!property) return;
