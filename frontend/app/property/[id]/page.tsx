@@ -4,19 +4,20 @@ import Navbar from "../../../components/Navbar";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
+export default function PropertyDetailsPage() {
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [down, setDown] = useState("");
   const [months, setMonths] = useState("24");
   const [result, setResult] = useState<any>(null);
-  const [id, setId] = useState<string>("");
 
   useEffect(() => {
-    const resolvedId = params?.id;
-    if (!resolvedId) return;
-    setId(resolvedId);
-    fetch(`${API_URL}/api/properties/${resolvedId}`)
+    // URL থেকে id নিন
+    const pathParts = window.location.pathname.split("/");
+    const id = pathParts[pathParts.length - 1];
+    if (!id) { setLoading(false); return; }
+
+    fetch(`${API_URL}/api/properties/${id}`)
       .then(r => r.json())
       .then(d => { setProperty(d.data); setLoading(false); })
       .catch(() => setLoading(false));
@@ -24,7 +25,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 
   const calculate = () => {
     if (!property) return;
-    const total = property.price;
+    const total = parseInt(property.price);
     const d = parseFloat(down) || Math.round(total * 0.3);
     const m = parseInt(months);
     const remaining = total - d;
@@ -92,7 +93,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 <h1 style={{ fontSize: "clamp(20px,3vw,28px)", fontWeight: "700", color: "#0f2d1e" }}>{property.area}</h1>
                 <span style={{ background: property.status === "বুকড" ? "#fef2f2" : "#f0fdf4", color: property.status === "বুকড" ? "#dc2626" : "#16a34a", padding: "5px 16px", borderRadius: "20px", fontSize: "13px", fontWeight: "600" }}>{property.status}</span>
               </div>
-              <div style={{ fontSize: "30px", fontWeight: "700", color: "#1a6b3c", marginBottom: "20px" }}>৳ {property.price?.toLocaleString()}</div>
+              <div style={{ fontSize: "30px", fontWeight: "700", color: "#1a6b3c", marginBottom: "20px" }}>৳ {parseInt(property.price)?.toLocaleString()}</div>
 
               <div className="info-grid">
                 {[
@@ -132,12 +133,12 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 
               <div style={{ background: "#e8f5ee", borderRadius: "10px", padding: "14px", marginBottom: "18px", textAlign: "center" }}>
                 <div style={{ fontSize: "12px", color: "#555", marginBottom: "4px" }}>সম্পত্তির মূল্য</div>
-                <div style={{ fontSize: "22px", fontWeight: "700", color: "#1a6b3c" }}>৳ {property.price?.toLocaleString()}</div>
+                <div style={{ fontSize: "22px", fontWeight: "700", color: "#1a6b3c" }}>৳ {parseInt(property.price)?.toLocaleString()}</div>
               </div>
 
               <div style={{ marginBottom: "14px" }}>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "6px" }}>ডাউন পেমেন্ট (টাকা)</label>
-                <input type="number" placeholder={`যেমন: ${Math.round(property.price * 0.3).toLocaleString()}`} value={down} onChange={e => setDown(e.target.value)}
+                <input type="number" placeholder={`যেমন: ${Math.round(parseInt(property.price) * 0.3).toLocaleString()}`} value={down} onChange={e => setDown(e.target.value)}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #ddd", fontSize: "14px" }} />
               </div>
 
