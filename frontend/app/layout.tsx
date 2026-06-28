@@ -2,13 +2,76 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Malikana Properties Ltd. | জমি ও প্লট বিক্রয়",
-  description: "সারা বাংলাদেশে জমি ও আবাসিক প্লট — সহজ মাসিক কিস্তিতে",
+  title: "Malikana Properties Ltd. | জমি ও প্লট বিক্রয় বাংলাদেশ",
+  description: "সারা বাংলাদেশে জমি, আবাসিক প্লট ও ফ্ল্যাট বিক্রয় — সহজ মাসিক কিস্তিতে। ঢাকা, গাজীপুর, নারায়ণগঞ্জসহ সারাদেশে সেরা রিয়েল এস্টেট সেবা।",
+  keywords: "জমি বিক্রয়, প্লট বিক্রয়, ফ্ল্যাট বিক্রয়, বাংলাদেশ রিয়েল এস্টেট, ঢাকা জমি, কিস্তিতে জমি, Malikana Properties",
+  authors: [{ name: "Malikana Properties Ltd." }],
+  creator: "Malikana Properties Ltd.",
+  publisher: "Malikana Properties Ltd.",
+  metadataBase: new URL("https://malikanaproperties.com"),
+  alternates: {
+    canonical: "https://malikanaproperties.com",
+  },
+  openGraph: {
+    type: "website",
+    locale: "bn_BD",
+    url: "https://malikanaproperties.com",
+    siteName: "Malikana Properties Ltd.",
+    title: "Malikana Properties Ltd. | জমি ও প্লট বিক্রয় বাংলাদেশ",
+    description: "সারা বাংলাদেশে জমি, আবাসিক প্লট ও ফ্ল্যাট বিক্রয় — সহজ মাসিক কিস্তিতে।",
+    images: [{ url: "/logo.jpeg", width: 800, height: 600, alt: "Malikana Properties Ltd." }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Malikana Properties Ltd. | জমি ও প্লট বিক্রয়",
+    description: "সারা বাংলাদেশে জমি, প্লট ও ফ্ল্যাট বিক্রয় — কিস্তি সুবিধায়।",
+    images: ["/logo.jpeg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  verification: {
+    google: "",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="bn">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#0f2d1e" />
+        <link rel="icon" href="/logo.jpeg" />
+        <link rel="apple-touch-icon" href="/logo.jpeg" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "RealEstateAgent",
+              "name": "Malikana Properties Ltd.",
+              "url": "https://malikanaproperties.com",
+              "logo": "https://malikanaproperties.com/logo.jpeg",
+              "description": "সারা বাংলাদেশে জমি, আবাসিক প্লট ও ফ্ল্যাট বিক্রয়",
+              "telephone": "+8801719880087",
+              "email": "malikanapropertiesltd@gmail.com",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Kazi Garden, 7th Floor, Tejgaon",
+                "addressLocality": "Dhaka",
+                "addressCountry": "BD"
+              },
+              "openingHours": "Sa-Th 09:00-18:00",
+              "sameAs": []
+            })
+          }}
+        />
+      </head>
       <body style={{ margin: 0, padding: 0, fontFamily: "sans-serif" }}>
         {children}
 
